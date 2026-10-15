@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #6366f1; /* Indigo */
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899; /* Pink */
+            --bg-body: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --danger: #ef4444;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --radius: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; tap-highlight-color: transparent; font-family: 'Inter', 'Hind Siliguri', sans-serif; }
+        body { background-color: var(--bg-body); color: var(--text-main); padding-bottom: 80px; -webkit-font-smoothing: antialiased; }
+
+        /* --- UI COMPONENTS --- */
+        .btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white; border: none; padding: 14px; border-radius: 12px;
+            font-weight: 600; width: 100%; font-size: 15px; cursor: pointer;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); transition: transform 0.2s;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text-muted); box-shadow: none; }
+        .btn-sm { padding: 8px 16px; width: auto; font-size: 13px; }
+
+        .card { background: var(--surface); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm); margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.5); }
+        
+        .input-group { margin-bottom: 16px; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 14px; color: var(--text-muted); }
+        .input-box {
+            width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 12px;
+            background: #f1f5f9; font-size: 15px; transition: 0.3s; outline: none;
+        }
+        .input-box:focus { background: white; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
+
+        /* --- AUTH SCREEN --- */
+        .auth-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--surface); z-index: 2000; padding: 30px;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .auth-header h1 { font-size: 32px; font-weight: 800; background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
+        
+        /* --- APP HEADER --- */
+        .app-header {
+            position: sticky; top: 0; z-index: 100; background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px); padding: 15px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+        .brand { font-weight: 700; font-size: 20px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .brand img { width: 32px; height: 32px; border-radius: 8px; }
+        .wallet-badge {
+            background: linear-gradient(135deg, #10b981, #059669); color: white;
+            padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 600;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+        }
+
+        /* --- SECTIONS --- */
+        .page { display: none; padding: 20px; animation: fadeIn 0.4s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Home */
+        .slider-frame { overflow: hidden; border-radius: var(--radius); box-shadow: var(--shadow-md); margin-bottom: 24px; position: relative; aspect-ratio: 16/9; background: #ddd; }
+        .slider-track { display: flex; height: 100%; transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); }
+        .slide { min-width: 100%; height: 100%; }
+        .slide img { width: 100%; height: 100%; object-fit: cover; }
+
+        .section-title { font-size: 18px; font-weight: 700; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .section-title i { color: var(--primary); }
+
+        .product-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .product-item {
+            background: white; border-radius: var(--radius); overflow: hidden;
+            box-shadow: var(--shadow-sm); transition: transform 0.2s; position: relative; border: 1px solid var(--border);
+        }
+        .product-item:active { transform: scale(0.97); }
+        .p-img { width: 100%; aspect-ratio: 1; object-fit: cover; background: #f1f5f9; padding: 10px; }
+        .p-details { padding: 12px; }
+        .p-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .p-price { font-size: 13px; color: var(--primary); font-weight: 700; }
+
+        /* Payment Selection Grid */
+        .payment-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
+        .payment-card {
+            border: 2px solid var(--border); border-radius: 12px; padding: 10px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s; background: white;
+        }
+        .payment-card img { width: 40px; height: 40px; object-fit: contain; margin-bottom: 5px; }
+        .payment-card span { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+        .payment-card.selected { border-color: var(--primary); background: #e0e7ff; }
+
+        /* Orders & History */
+        .history-item {
+            background: white; padding: 16px; border-radius: 12px; margin-bottom: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            border: 1px solid var(--border);
+        }
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .st-Pending { background: #fffbeb; color: #b45309; border: 1px solid #fcd34d; }
+        .st-Completed, .st-Approved, .st-active { background: #ecfdf5; color: #047857; border: 1px solid #6ee7b7; }
+        .st-Rejected, .st-Canceled { background: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5; }
+
+        /* Profile */
+        .profile-card { text-align: center; padding: 30px 20px; background: white; border-radius: var(--radius); box-shadow: var(--shadow-md); margin-bottom: 20px; }
+        .profile-pic-container { position: relative; width: 100px; height: 100px; margin: 0 auto 15px; }
+        .profile-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid #e0e7ff; }
+        .edit-badge {
+            position: absolute; bottom: 0; right: 0; background: var(--primary); color: white;
+            width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-size: 14px; border: 2px solid white; cursor: pointer;
+        }
+
+        /* --- NAVIGATION & FLOATING BTN --- */
+        .nav-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: white;
+            display: flex; justify-content: space-around; padding: 12px 0;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.05); z-index: 1000;
+            border-radius: 20px 20px 0 0;
+        }
+        .nav-item { color: var(--text-muted); font-size: 20px; position: relative; transition: 0.3s; padding: 10px; }
+        .nav-item.active { color: var(--primary); transform: translateY(-5px); }
+        .nav-item.active::after {
+            content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 6px; height: 6px; background: var(--primary); border-radius: 50%;
+        }
+
+        .floating-chat {
+            position: fixed; bottom: 90px; right: 20px;
+            width: 55px; height: 55px; background: var(--secondary);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 24px; box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+            z-index: 1100; cursor: pointer; animation: bounce 2s infinite;
+        }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+        /* --- MODALS --- */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 3000; align-items: flex-end;
+            backdrop-filter: blur(4px);
+        }
+        .modal.open { display: flex; }
+        .modal-sheet {
+            background: white; width: 100%; max-height: 90vh;
+            border-radius: 24px 24px 0 0; padding: 25px; overflow-y: auto;
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        /* Variant Buttons */
+        .variant-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+        .variant-btn {
+            border: 2px solid var(--border); padding: 12px; border-radius: 12px;
+            text-align: center; font-size: 14px; font-weight: 600; color: var(--text-muted);
+            background: transparent;
+        }
+        .variant-btn.active { border-color: var(--primary); background: #e0e7ff; color: var(--primary); }
+
+        /* Chat */
+        .chat-area { height: 60vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px 0; }
+        .msg { max-width: 75%; padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.4; }
+        .msg.user { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 4px; }
+        .msg.admin { align-self: flex-start; background: #e2e8f0; color: var(--text-main); border-bottom-left-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <div id="authContainer" class="auth-screen">
+        <div class="auth-header">
+            <h1>স্বাগতম</h1>
+            <p style="color: var(--text-muted); margin-bottom: 30px;">শুরু করতে লগইন করুন</p>
+        </div>
+        
+        <form id="loginForm">
+            <div class="input-group">
+                <label>ইমেইল এড্রেস</label>
+                <input type="email" id="loginEmail" class="input-box" placeholder="name@example.com" required>
+            </div>
+            <div class="input-group">
+                <label>পাসওয়ার্ড</label>
+                <input type="password" id="loginPass" class="input-box" placeholder="********" required>
+            </div>
+            <button type="submit" class="btn">লগইন</button>
+            <button type="button" class="btn btn-outline" style="margin-top: 15px;" onclick="toggleAuth('register')">নতুন একাউন্ট খুলুন</button>
+        </form>
+
+        <form id="registerForm" style="display: none;">
+            <div class="input-group">
+                <label>আপনার নাম</label>
+                <input type="text" id="regName" class="input-box" placeholder="Full Name" required>
+            </div>
+            <div class="input-group">
+                <label>ইমেইল এড্রেস</label>
+                <input type="email" id="regEmail" class="input-box" placeholder="name@example.com" required>
+            </div>
+            <div class="input-group">
+                <label>পাসওয়ার্ড</label>
+                <input type="password" id="regPass" class="input-box" placeholder="********" required>
+            </div>
+            <button type="submit" class="btn">রেজিস্টার</button>
+            <button type="button" class="btn btn-outline" style="margin-top: 15px;" onclick="toggleAuth('login')">লগইন করুন</button>
+        </form>
+    </div>
+
+    <div id="appContainer" style="display: none;">
+        <header class="app-header">
+            <div class="brand">
+                <img id="headerLogo" src="https://via.placeholder.com/40" alt="">
+                <span id="headerAppName">Store</span>
+            </div>
+            <div class="wallet-badge" onclick="navTo('wallet')">
+                <i class="fas fa-wallet" style="margin-right: 5px;"></i>
+                <span id="userBalance">৳ 0.0</span>
+            </div>
+        </header>
+
+        <main>
+            <section id="home" class="page active">
+                <div id="noticeBoard" class="card" style="display: none; background: #fffbeb; border-color: #fcd34d;">
+                    <p id="noticeText" style="color: #b45309; font-size: 14px;"><i class="fas fa-bullhorn" style="margin-right:8px;"></i> Loading...</p>
+                </div>
+
+                <div class="slider-frame">
+                    <div class="slider-track" id="sliderTrack"></div>
+                </div>
+
+                <div class="section-title"><i class="fas fa-fire"></i> জনপ্রিয় কালেকশন</div>
+                <div class="product-grid" id="productContainer">
+                    </div>
+            </section>
+
+            <section id="orders" class="page">
+                <div class="section-title"><i class="fas fa-history"></i> আমার অর্ডার</div>
+                <div id="orderHistoryList"></div>
+            </section>
+
+            <section id="wallet" class="page">
+                <div class="card" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; text-align: center; padding: 30px;">
+                    <p style="opacity: 0.8; font-size: 14px;">বর্তমান ব্যালেন্স</p>
+                    <h1 style="font-size: 36px; margin: 10px 0;" id="walletPageBalance">৳ 0.00</h1>
+                    <button class="btn btn-sm" style="background: white; color: var(--primary);" onclick="openModal('depositModal')">+ মানি এড করুন</button>
+                </div>
+
+                <div class="section-title">লেনদেন ইতিহাস</div>
+                <div id="depositHistoryList"></div>
+            </section>
+
+            <section id="profile" class="page">
+                <div class="profile-card">
+                    <div class="profile-pic-container">
+                        <img id="profileImage" src="https://via.placeholder.com/100" class="profile-img">
+                        <div class="edit-badge" onclick="openModal('editProfileModal')"><i class="fas fa-camera"></i></div>
+                    </div>
+                    <h2 id="profileNameDisplay" style="font-size: 20px;">User Name</h2>
+                    <p id="profileEmailDisplay" style="color: var(--text-muted); font-size: 14px;">email@example.com</p>
+                    <button class="btn btn-outline btn-sm" style="margin-top: 15px; width: auto;" onclick="openModal('editProfileModal')">এডিট প্রোফাইল</button>
+                </div>
+
+                <div class="card" onclick="openModal('chatModal')" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="background: #fce7f3; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--secondary);">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                        <span style="font-weight: 500;">সাপোর্ট সেন্টার</span>
+                    </div>
+                    <i class="fas fa-chevron-right" style="color: var(--border);"></i>
+                </div>
+
+                <button class="btn" style="background: #fee2e2; color: var(--danger); margin-top: 20px;" onclick="auth.signOut()">লগ আউট</button>
+            </section>
+        </main>
+
+        <div class="floating-chat" onclick="openModal('chatModal')">
+            <i class="fas fa-comment-dots"></i>
+        </div>
+
+        <nav class="nav-bar">
+            <div class="nav-item active" onclick="navTo('home', this)"><i class="fas fa-home"></i></div>
+            <div class="nav-item" onclick="navTo('orders', this)"><i class="fas fa-shopping-bag"></i></div>
+            <div class="nav-item" onclick="navTo('wallet', this)"><i class="fas fa-wallet"></i></div>
+            <div class="nav-item" onclick="navTo('profile', this)"><i class="fas fa-user"></i></div>
+        </nav>
+    </div>
+
+    <div id="editProfileModal" class="modal">
+        <div class="modal-sheet">
+            <div class="section-title">প্রোফাইল আপডেট</div>
+            <div class="input-group" style="text-align: center;">
+                <label for="fileUpload" style="cursor: pointer; display: inline-block;">
+                    <div style="width: 80px; height: 80px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; border: 2px dashed var(--primary);">
+                        <i class="fas fa-cloud-upload-alt" style="color: var(--primary); font-size: 24px;"></i>
+                    </div>
+                    <span style="font-size: 12px; display: block; margin-top: 5px;">ছবি পরিবর্তন করুন</span>
+                </label>
+                <input type="file" id="fileUpload" accept="image/*" hidden onchange="previewImage(this)">
+            </div>
+            <div class="input-group">
+                <label>নতুন নাম</label>
+                <input type="text" id="editNameInput" class="input-box">
+            </div>
+            <button class="btn" onclick="saveProfile()">সেভ করুন</button>
+            <button class="btn btn-outline" style="margin-top: 10px;" onclick="closeModal('editProfileModal')">বন্ধ করুন</button>
+        </div>
+    </div>
+
+    <div id="buyModal" class="modal">
+        <div class="modal-sheet">
+            <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                <img id="buyImg" src="" style="width: 60px; height: 60px; border-radius: 12px; object-fit: contain; border: 1px solid var(--border);">
+                <div>
+                    <h3 id="buyTitle" style="font-size: 18px;">Product</h3>
+                    <p style="color: var(--primary); font-weight: 700; font-size: 16px;" id="buyPriceDisplay">৳ 0</p>
+                </div>
+            </div>
+
+            <label class="input-group">প্যাকেজ বাছাই করুন</label>
+            <div id="variantContainer" class="variant-grid"></div>
+
+            <div class="input-group">
+                <label>আপনার প্লেয়ার আইডি / তথ্য</label>
+                <input type="text" id="orderData" class="input-box" placeholder="Player ID / Details">
+            </div>
+
+            <div class="input-group">
+                <label>পেমেন্ট মেথড</label>
+                <div class="payment-grid" id="paymentMethodGrid_Order">
+                    <div class="payment-card selected" onclick="selectPaymentMethod('Wallet', this, 'order')">
+                        <i class="fas fa-wallet" style="font-size: 24px; color: var(--primary); margin-bottom: 5px;"></i>
+                        <span>Wallet</span>
+                    </div>
+                    </div>
+            </div>
+
+            <div id="manualPayInfo" style="display: none; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px;">
+                <p style="font-size: 13px; color: var(--danger); margin-bottom: 10px;">
+                    Send money to: <b id="sendMoneyNumber">01xxxxxxxxx</b>
+                </p>
+                <input type="text" id="orderSenderNum" class="input-box" placeholder="Sender Number" style="margin-bottom: 10px;">
+                <input type="text" id="orderTrxID" class="input-box" placeholder="TrxID">
+            </div>
+
+            <button class="btn" onclick="confirmOrder()">অর্ডার কনফার্ম করুন</button>
+            <button class="btn btn-outline" style="margin-top: 10px;" onclick="closeModal('buyModal')">বাতিল</button>
+        </div>
+    </div>
+
+    <div id="depositModal" class="modal">
+        <div class="modal-sheet">
+            <div class="section-title">ওয়ালেটে টাকা যোগ করুন</div>
+            
+            <label class="input-group">পেমেন্ট মেথড সিলেক্ট করুন</label>
+            <div class="payment-grid" id="paymentMethodGrid_Deposit"></div>
+
+            <div id="depositPayInfo" style="display: none; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 12px; margin-bottom: 15px;">
+                <p style="font-size: 14px; color: #15803d; text-align: center;">
+                    <i class="fas fa-copy"></i> নাম্বার: <b id="depositNumberDisplay" style="font-size: 18px;">...</b>
+                </p>
+            </div>
+
+            <div class="input-group">
+                <label>টাকার পরিমাণ</label>
+                <input type="number" id="depAmount" class="input-box" placeholder="Example: 100">
+            </div>
+            <div class="input-group">
+                <label>যে নাম্বার থেকে পাঠিয়েছেন</label>
+                <input type="text" id="depSender" class="input-box" placeholder="01xxxxxxxxx">
+            </div>
+            <div class="input-group">
+                <label>ট্রানজেকশন আইডি (TrxID)</label>
+                <input type="text" id="depTrx" class="input-box" placeholder="TrxID">
+            </div>
+
+            <button class="btn" onclick="submitDeposit()">রিকোয়েস্ট পাঠান</button>
+            <button class="btn btn-outline" style="margin-top: 10px;" onclick="closeModal('depositModal')">বন্ধ করুন</button>
+        </div>
+    </div>
+
+    <div id="chatModal" class="modal">
+        <div class="modal-sheet" style="height: 80vh;">
+            <div class="section-title">লাইভ সাপোর্ট</div>
+            <div class="chat-area" id="chatBox">
+                </div>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <input type="text" id="chatInput" class="input-box" placeholder="মেসেজ লিখুন..." style="margin-bottom: 0;">
+                <button class="btn" style="width: 60px;" onclick="sendChatMsg()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+            <button class="btn btn-outline" style="margin-top: 10px;" onclick="closeModal('chatModal')">বন্ধ</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        // --- 1. CONFIGURATION ---
+        const firebaseConfig = {
+  apiKey: "AIzaSyCvp2ykv6CBEjeLpidAv4zbgJPVbWelLIo",
+  authDomain: "novashop-18fb1.firebaseapp.com",
+  projectId: "novashop-18fb1",
+  storageBucket: "novashop-18fb1.firebasestorage.app",
+  messagingSenderId: "398601914804",
+  appId: "1:398601914804:web:4056c2b05aacaec0d84ae1",
+  measurementId: "G-1NF6K0VF5Z"
+};
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // --- 2. STATE MANAGEMENT ---
+        let currentUser = null;
+        let selectedProduct = null;
+        let selectedVariant = null;
+        let activePaymentMethod = 'Wallet'; 
+        let paymentMethodsData = [];
+
+        // --- 3. INITIALIZATION ---
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('authContainer').style.display = 'none';
+                document.getElementById('appContainer').style.display = 'block';
+                initApp();
+            } else {
+                document.getElementById('authContainer').style.display = 'flex';
+                document.getElementById('appContainer').style.display = 'none';
+            }
+        });
+
+        function initApp() {
+            loadUserData();
+            loadSettings();
+            loadProducts();
+            loadOrders();
+            loadPaymentMethods();
+            setupChat();
+        }
+
+        // --- 4. CORE FUNCTIONS ---
+        
+        // Settings & Branding
+        async function loadSettings() {
+            const branding = await db.collection('settings').doc('branding').get();
+            if(branding.exists) {
+                const b = branding.data();
+                if(b.appName) document.getElementById('headerAppName').innerText = b.appName;
+                if(b.profileIconUrl) document.getElementById('headerLogo').src = b.profileIconUrl;
+            }
+
+            const notice = await db.collection('settings').doc('notice').get();
+            if(notice.exists && notice.data().text) {
+                document.getElementById('noticeBoard').style.display = 'block';
+                document.getElementById('noticeText').innerHTML = `<i class="fas fa-bullhorn" style="margin-right:8px;"></i> ${notice.data().text}`;
+            }
+
+            const slider = await db.collection('settings').doc('slider').get();
+            if(slider.exists && slider.data().imageUrls) {
+                const track = document.getElementById('sliderTrack');
+                track.innerHTML = '';
+                slider.data().imageUrls.forEach(url => {
+                    if(url) track.innerHTML += `<div class="slide"><img src="${url}"></div>`;
+                });
+                startSlider();
+            }
+        }
+
+        // User Data
+        function loadUserData() {
+            db.collection('users').doc(currentUser.uid).onSnapshot(doc => {
+                if(doc.exists) {
+                    const d = doc.data();
+                    const bal = (d.walletBalance || 0).toFixed(2);
+                    document.getElementById('userBalance').innerText = `৳ ${bal}`;
+                    document.getElementById('walletPageBalance').innerText = `৳ ${bal}`;
+                    
+                    document.getElementById('profileNameDisplay').innerText = d.name;
+                    document.getElementById('editNameInput').value = d.name;
+                    document.getElementById('profileEmailDisplay').innerText = d.email;
+                    
+                    // Profile Image (Base64)
+                    if(d.profileBase64) {
+                        document.getElementById('profileImage').src = d.profileBase64;
+                    } else if(d.photoURL) {
+                        document.getElementById('profileImage').src = d.photoURL;
+                    }
+                }
+            });
+
+            // Deposit History
+            db.collection('moneyRequests').where('userId', '==', currentUser.uid)
+                .orderBy('date', 'desc').onSnapshot(snap => {
+                    const list = document.getElementById('depositHistoryList');
+                    list.innerHTML = '';
+                    snap.forEach(doc => {
+                        const d = doc.data();
+                        list.innerHTML += `
+                        <div class="history-item">
+                            <div>
+                                <div style="font-weight:600">Add Money (${d.paymentMethod})</div>
+                                <div style="font-size:12px; color:var(--text-muted)">${new Date(d.date.seconds*1000).toLocaleDateString()}</div>
+                            </div>
+                            <div style="text-align:right">
+                                <div style="font-weight:700">৳ ${d.amount}</div>
+                                <span class="status-badge st-${d.status}">${d.status}</span>
+                            </div>
+                        </div>`;
+                    });
+                });
+        }
+
+        // --- 5. PAYMENT METHODS (VISUAL) ---
+        async function loadPaymentMethods() {
+            const snap = await db.collection('paymentMethods').get();
+            paymentMethodsData = [];
+            const depGrid = document.getElementById('paymentMethodGrid_Deposit');
+            const ordGrid = document.getElementById('paymentMethodGrid_Order');
+            
+            // Clear but keep Wallet for Order Grid
+            ordGrid.innerHTML = `
+                <div class="payment-card selected" onclick="selectPaymentMethod('Wallet', this, 'order')">
+                    <i class="fas fa-wallet" style="font-size: 24px; color: var(--primary); margin-bottom: 5px;"></i>
+                    <span>Wallet</span>
+                </div>`;
+            depGrid.innerHTML = '';
+
+            snap.forEach(doc => {
+                const m = doc.data();
+                paymentMethodsData.push(m);
+                
+                // HTML for the card
+                const cardHTML = `
+                <div class="payment-card" onclick="selectPaymentMethod('${m.name}', this, 'TYPE')">
+                    <img src="${m.logoUrl}" alt="${m.name}">
+                    <span>${m.name}</span>
+                </div>`;
+
+                depGrid.innerHTML += cardHTML.replace('TYPE', 'deposit');
+                ordGrid.innerHTML += cardHTML.replace('TYPE', 'order');
+            });
+        }
+
+        function selectPaymentMethod(name, cardElem, type) {
+            // UI Update
+            const gridId = type === 'order' ? 'paymentMethodGrid_Order' : 'paymentMethodGrid_Deposit';
+            document.querySelectorAll(`#${gridId} .payment-card`).forEach(c => c.classList.remove('selected'));
+            cardElem.classList.add('selected');
+            
+            activePaymentMethod = name;
+
+            // Logic Update
+            if(type === 'deposit') {
+                const method = paymentMethodsData.find(m => m.name === name);
+                if(method) {
+                    document.getElementById('depositPayInfo').style.display = 'block';
+                    document.getElementById('depositNumberDisplay').innerText = method.number;
+                }
+            } else if(type === 'order') {
+                if(name === 'Wallet') {
+                    document.getElementById('manualPayInfo').style.display = 'none';
+                } else {
+                    const method = paymentMethodsData.find(m => m.name === name);
+                    if(method) {
+                        document.getElementById('manualPayInfo').style.display = 'block';
+                        document.getElementById('sendMoneyNumber').innerText = method.number;
+                    }
+                }
+            }
+        }
+
+        // --- 6. PROFILE EDIT & IMAGE COMPRESSION ---
+        let newProfileBase64 = null;
+
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                // Compress Image
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        // Resize to max 300px
+                        const scaleFactor = 300 / img.width;
+                        canvas.width = 300;
+                        canvas.height = img.height * scaleFactor;
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        // Get Base64
+                        newProfileBase64 = canvas.toDataURL('image/jpeg', 0.7); // 70% quality
+                        alert("ছবি সিলেক্ট করা হয়েছে! 'সেভ করুন' বাটনে ক্লিক করুন।");
+                    }
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function saveProfile() {
+            const newName = document.getElementById('editNameInput').value;
+            const updateData = { name: newName };
+            
+            if(newProfileBase64) {
+                updateData.profileBase64 = newProfileBase64;
+            }
+
+            try {
+                await db.collection('users').doc(currentUser.uid).update(updateData);
+                alert("প্রোফাইল আপডেট সফল হয়েছে!");
+                closeModal('editProfileModal');
+            } catch(e) {
+                alert("এরর: " + e.message);
+            }
+        }
+
+        // --- 7. PRODUCTS & ORDERING ---
+        async function loadProducts() {
+            const snap = await db.collection('products').where('status', '==', 'active').get();
+            const container = document.getElementById('productContainer');
+            container.innerHTML = '';
+            snap.forEach(doc => {
+                const p = doc.data();
+                // Find lowest price
+                const minP = p.variants?.length ? p.variants[0].price : 'N/A';
+                
+                const div = document.createElement('div');
+                div.className = 'product-item';
+                div.onclick = () => showBuyModal(doc.id, p);
+                div.innerHTML = `
+                    <img src="${p.logo}" class="p-img">
+                    <div class="p-details">
+                        <div class="p-title">${p.name}</div>
+                        <div class="p-price">${minP}</div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function showBuyModal(pid, product) {
+            selectedProduct = product;
+            selectedVariant = null;
+            document.getElementById('buyImg').src = product.logo;
+            document.getElementById('buyTitle').innerText = product.name;
+            document.getElementById('buyPriceDisplay').innerText = "৳ 0";
+            
+            const vGrid = document.getElementById('variantContainer');
+            vGrid.innerHTML = '';
+            
+            if(product.variants) {
+                product.variants.forEach((v, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'variant-btn';
+                    btn.innerHTML = `${v.amount}<br><small>${v.price}</small>`;
+                    btn.onclick = () => {
+                        document.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        selectedVariant = v;
+                        document.getElementById('buyPriceDisplay').innerText = v.price;
+                    };
+                    vGrid.appendChild(btn);
+                });
+            }
+            // Reset Payment to Wallet
+            selectPaymentMethod('Wallet', document.querySelector('#paymentMethodGrid_Order .payment-card'), 'order');
+            openModal('buyModal');
+        }
+
+        async function confirmOrder() {
+            if(!selectedVariant) return alert('প্যাকেজ সিলেক্ট করুন');
+            const data = document.getElementById('orderData').value;
+            if(!data) return alert('আইডি বা তথ্য দিন');
+
+            const priceNum = parseFloat(selectedVariant.price.replace(/[^0-9.]/g, ''));
+            const orderPayload = {
+                userId: currentUser.uid,
+                product: `${selectedProduct.name} (${selectedVariant.amount})`,
+                identifier: data,
+                price: selectedVariant.price,
+                status: 'Pending',
+                date: firebase.firestore.FieldValue.serverTimestamp(),
+                paymentMethod: activePaymentMethod
+            };
+
+            if(activePaymentMethod === 'Wallet') {
+                // Check Balance
+                const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                const bal = userDoc.data().walletBalance || 0;
+                if(bal < priceNum) return alert('অপর্যাপ্ত ব্যালেন্স!');
+                
+                // Deduct
+                await db.collection('users').doc(currentUser.uid).update({
+                    walletBalance: firebase.firestore.FieldValue.increment(-priceNum)
+                });
+            } else {
+                // Manual Payment Check
+                const sender = document.getElementById('orderSenderNum').value;
+                const trx = document.getElementById('orderTrxID').value;
+                if(!sender || !trx) return alert('পেমেন্ট তথ্য দিন');
+                orderPayload.userPaymentNumber = sender;
+                orderPayload.transactionId = trx;
+            }
+
+            await db.collection('orders').add(orderPayload);
+            alert('অর্ডার সফল হয়েছে!');
+            closeModal('buyModal');
+            navTo('orders', document.querySelectorAll('.nav-item')[1]);
+        }
+
+        function loadOrders() {
+            db.collection('orders').where('userId', '==', currentUser.uid).orderBy('date', 'desc')
+            .onSnapshot(snap => {
+                const list = document.getElementById('orderHistoryList');
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    const o = doc.data();
+                    list.innerHTML += `
+                    <div class="history-item">
+                        <div>
+                            <div style="font-weight:600; font-size:14px;">${o.product}</div>
+                            <div style="font-size:12px; color:var(--text-muted)">${o.identifier}</div>
+                        </div>
+                        <div style="text-align:right">
+                            <div style="font-weight:700; color:var(--primary)">${o.price}</div>
+                            <span class="status-badge st-${o.status}">${o.status}</span>
+                        </div>
+                    </div>`;
+                });
+            });
+        }
+
+        // --- 8. DEPOSIT LOGIC ---
+        async function submitDeposit() {
+            if(!activePaymentMethod) return alert('মেথড সিলেক্ট করুন');
+            const amount = parseFloat(document.getElementById('depAmount').value);
+            const sender = document.getElementById('depSender').value;
+            const trx = document.getElementById('depTrx').value;
+
+            if(!amount || !sender || !trx) return alert('সব তথ্য পূরণ করুন');
+
+            await db.collection('moneyRequests').add({
+                userId: currentUser.uid,
+                amount: amount,
+                paymentMethod: activePaymentMethod,
+                userPaymentNumber: sender,
+                transactionId: trx,
+                status: 'Pending',
+                date: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            alert('রিকোয়েস্ট জমা হয়েছে!');
+            closeModal('depositModal');
+        }
+
+        // --- 9. CHAT LOGIC ---
+        function setupChat() {
+            db.collection('supportMessages').where('userId', '==', currentUser.uid)
+            .orderBy('timestamp', 'asc').onSnapshot(snap => {
+                const box = document.getElementById('chatBox');
+                box.innerHTML = '';
+                snap.forEach(doc => {
+                    const m = doc.data();
+                    const div = document.createElement('div');
+                    div.className = `msg ${m.sender}`;
+                    div.innerText = m.message;
+                    box.appendChild(div);
+                });
+                box.scrollTop = box.scrollHeight;
+            });
+        }
+        
+        async function sendChatMsg() {
+            const txt = document.getElementById('chatInput').value;
+            if(!txt) return;
+            await db.collection('supportMessages').add({
+                userId: currentUser.uid,
+                userName: currentUser.data?.name || 'User',
+                message: txt,
+                sender: 'user',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            document.getElementById('chatInput').value = '';
+        }
+
+        // --- 10. AUTH & UTILS ---
+        document.getElementById('loginForm').onsubmit = (e) => {
+            e.preventDefault();
+            const em = document.getElementById('loginEmail').value;
+            const ps = document.getElementById('loginPass').value;
+            auth.signInWithEmailAndPassword(em, ps).catch(err => alert(err.message));
+        };
+
+        document.getElementById('registerForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const nm = document.getElementById('regName').value;
+            const em = document.getElementById('regEmail').value;
+            const ps = document.getElementById('regPass').value;
+            try {
+                const cred = await auth.createUserWithEmailAndPassword(em, ps);
+                await db.collection('users').doc(cred.user.uid).set({
+                    name: nm, email: em, walletBalance: 0, status: 'active', photoURL: 'https://via.placeholder.com/100'
+                });
+            } catch(err) { alert(err.message); }
+        };
+
+        function toggleAuth(type) {
+            document.getElementById('loginForm').style.display = type === 'login' ? 'block' : 'none';
+            document.getElementById('registerForm').style.display = type === 'register' ? 'block' : 'none';
+        }
+
+        function navTo(pageId, navEl) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            if(navEl) navEl.classList.add('active');
+        }
+
+        function openModal(id) { 
+            document.getElementById(id).classList.add('open'); 
+        }
+        function closeModal(id) { 
+            document.getElementById(id).classList.remove('open'); 
+        }
+
+        let slideIdx = 0;
+        function startSlider() {
+            const track = document.getElementById('sliderTrack');
+            const slides = track.children;
+            if(slides.length < 2) return;
+            setInterval(() => {
+                slideIdx = (slideIdx + 1) % slides.length;
+                track.style.transform = `translateX(-${slideIdx * 100}%)`;
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
